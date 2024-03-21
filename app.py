@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -17,10 +17,13 @@ class Item(db.Model):
     # publication_date = db.Column(db.DateTime, default=datetime.now())
     # text = db.Column(db.Text, nullable=False)
 
+    def __repr__(self):
+        return self.title
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    items=Item.query.order_by(Item.price).all()
+    return render_template('index.html', data=items)
 
 
 @app.route('/about')
@@ -28,9 +31,20 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/create')
+@app.route('/create', methods=['POST', 'GET'])
 def create():
-    return render_template('create.html')
+    if request.method=='POST':
+        title=request.form['title']
+        price=request.form['price']
+        item=Item(title=title, price=price)
+        try:
+            db.session.add(item)
+            db.session.commit()
+            return redirect('/')
+        except:
+            return 'Произошла ошибка'
+    else:
+        return render_template('create.html')
 
 
 

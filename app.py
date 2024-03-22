@@ -8,21 +8,25 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 db = SQLAlchemy(app)
 app.app_context().push()
 
+
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    #quantity = db.Column(db.Integer, nullable=False)
     isActive = db.Column(db.Boolean, default=True)
     # image = db.Column(db.LargeBinary, nullable=False)
-    # publication_date = db.Column(db.DateTime, default=datetime.now())
+    #publication_date = db.Column(db.DateTime, default=datetime.now())
+
     # text = db.Column(db.Text, nullable=False)
 
     def __repr__(self):
         return self.title
 
+
 @app.route('/')
 def index():
-    items=Item.query.order_by(Item.price).all()
+    items = Item.query.order_by(Item.price).all()
     return render_template('index.html', data=items)
 
 
@@ -33,10 +37,11 @@ def about():
 
 @app.route('/create', methods=['POST', 'GET'])
 def create():
-    if request.method=='POST':
-        title=request.form['title']
-        price=request.form['price']
-        item=Item(title=title, price=price)
+    if request.method == 'POST':
+        title = request.form['title']
+        price = request.form['price']
+        # quantity =request.form['quantity']
+        item = Item(title=title, price=price)
         try:
             db.session.add(item)
             db.session.commit()
@@ -45,7 +50,6 @@ def create():
             return 'Произошла ошибка'
     else:
         return render_template('create.html')
-
 
 
 @app.route('/new')

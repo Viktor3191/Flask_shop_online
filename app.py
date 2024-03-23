@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from cloudipsp import Api, Checkout
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
@@ -13,10 +15,11 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Integer, nullable=False)
-    #quantity = db.Column(db.Integer, nullable=False)
+    # quantity = db.Column(db.Integer, nullable=False)
     isActive = db.Column(db.Boolean, default=True)
+
     # image = db.Column(db.LargeBinary, nullable=False)
-    #publication_date = db.Column(db.DateTime, default=datetime.now())
+    # publication_date = db.Column(db.DateTime, default=datetime.now())
 
     # text = db.Column(db.Text, nullable=False)
 
@@ -50,6 +53,19 @@ def create():
             return 'Произошла ошибка'
     else:
         return render_template('create.html')
+
+
+@app.route('/buy/<int:id>')
+def item_buy(id):
+    item = Item.query.get(id)
+    api = Api(merchant_id=1396424, secret_key='test')
+    checkout = Checkout(api=api)
+    data = {
+        "currency": "USD",
+        "amount": 1000  # item.price
+    }
+    url = checkout.url(data).get('checkout_url')
+    return redirect(url)
 
 
 @app.route('/new')
